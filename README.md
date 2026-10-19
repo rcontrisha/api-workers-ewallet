@@ -182,4 +182,8 @@ The Docker image does **not** start PostgreSQL or Redis. If those services run o
 
 ## License
 
-Distributed under the MIT License. See License for more information.
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+
+## Related Repositories
+
+- **Frontend Repository:** [fe-workers-ewallet](https://github.com/rcontrisha/fe-workers-ewallet)
