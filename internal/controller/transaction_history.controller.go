@@ -24,6 +24,19 @@ func NewTransactionHistoryController(service *service.TransactionHistoryService)
 
 }
 
+// GetTransactionHistory godoc
+// @Summary Get transaction history
+// @Description Retrieve the authenticated user's successful transaction history with pagination and optional search.
+// @Tags History
+// @Produce json
+// @Security BearerAuth
+// @Param page query int false "Page number, defaults to 1" default(1)
+// @Param limit query int false "Number of transactions per page, defaults to 7" default(7)
+// @Param search query string false "Search by name or phone number"
+// @Success 200 {object} dto.Response "Transaction history retrieved successfully"
+// @Failure 401 {object} dto.Response "Unauthorized or invalid token"
+// @Failure 500 {object} dto.Response "Internal server error"
+// @Router /history [get]
 func (c *TransactionHistoryController) GetTransactionHistory(ctx *gin.Context) {
 	page, err := strconv.Atoi(ctx.DefaultQuery("page", "1"))
 	if err != nil || page < 1 {
@@ -76,17 +89,17 @@ func (c *TransactionHistoryController) GetTransactionHistory(ctx *gin.Context) {
 }
 
 // DeleteHistoryTransaction godoc
-// @Summary Hide a transaction from the authenticated user's history
-// @Description Soft-delete a transaction for the current wallet owner only.
+// @Summary Hide transaction history
+// @Description Hide a transaction from the authenticated user's history without deleting the underlying transaction record.
 // @Tags History
 // @Produce json
 // @Security BearerAuth
 // @Param id path string true "Transaction UUID"
-// @Success 200 {object} dto.Response
+// @Success 200 {object} dto.Response "Transaction hidden successfully"
 // @Failure 400 {object} dto.Response "Invalid transaction ID"
-// @Failure 401 {object} dto.Response "Not authenticated"
-// @Failure 404 {object} dto.Response "Transaction not found in user's history"
-// @Failure 500 {object} dto.Response "Server error"
+// @Failure 401 {object} dto.Response "Unauthorized or invalid token"
+// @Failure 404 {object} dto.Response "Transaction not found, inaccessible, or already hidden"
+// @Failure 500 {object} dto.Response "Internal server error"
 // @Router /history/{id} [delete]
 func (c *TransactionHistoryController) DeleteHistoryTransaction(ctx *gin.Context) {
 	token, exists := ctx.Get("token")
@@ -132,8 +145,6 @@ func (c *TransactionHistoryController) DeleteHistoryTransaction(ctx *gin.Context
 		return
 	}
 
-
-	
 	ctx.JSON(http.StatusOK, dto.Response{
 		Success: true,
 		Message: "transaction history deleted successfully",

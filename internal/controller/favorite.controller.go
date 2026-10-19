@@ -22,6 +22,20 @@ func NewFavoriteController(service *service.FavoriteService) *FavoriteController
 	}
 }
 
+// Favorite godoc
+// @Summary Toggle favorite user
+// @Description Add a user to favorites or remove them if already favorited.
+// @Tags Favorite
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param payload body dto.FavoriteRequest true "Favorite user request"
+// @Success 200 {object} dto.Response "Favorite added or removed successfully"
+// @Failure 400 {object} dto.Response "Invalid favorite_user_id or request payload"
+// @Failure 401 {object} dto.Response "Unauthorized or invalid token"
+// @Failure 404 {object} dto.Response "User not found"
+// @Failure 500 {object} dto.Response "Internal server error"
+// @Router /favorite [post]
 func (f *FavoriteController) Favorite(ctx *gin.Context) {
 	token, exist := ctx.Get("token")
 	if !exist {
