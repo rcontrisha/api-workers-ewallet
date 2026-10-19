@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"log"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/rcontrisha/api-workers-ewallet/internal/model"
@@ -15,18 +16,22 @@ func NewTransactionHistoryRepo() *TransactionHistoryRepo {
 }
 
 func (r *TransactionHistoryRepo) GetHistoryTransaction(ctx context.Context, db DBTX, WalletID, search string, limit, offset int) ([]model.TransactionHistory, error) {
+	log.Println("Limit ", limit)
+	log.Println("Search ", search)
+	log.Println("Offset ", offset)
+
 	query := `SELECT
     t.id,
-  CASE WHEN t.type = 'topup' THEN pm.name ELSE a.fullname END AS name,
-  CASE WHEN t.type = 'topup' THEN pm.logo ELSE a.avatar   END AS avatar,
-  CASE WHEN t.type = 'topup' THEN NULL    ELSE a.phone    END AS phone,
+  CASE WHEN t.type = 'TOPUP' THEN pm.name ELSE a.fullname END AS name,
+  CASE WHEN t.type = 'TOPUP' THEN pm.logo ELSE a.avatar   END AS avatar,
+  CASE WHEN t.type = 'TOPUP' THEN NULL    ELSE a.phone    END AS phone,
   CASE
-    WHEN t.type = 'topup'        THEN 'topup'
+    WHEN t.type = 'TOPUP'        THEN 'TOPUP'
     WHEN t.sender_wallet_id = $1 THEN 'transfer_out'
     ELSE                              'transfer_in'
   END AS type,
   CASE
-    WHEN t.type <> 'topup' AND t.sender_wallet_id = $1 THEN -t.total
+    WHEN t.type <> 'TOPUP' AND t.sender_wallet_id = $1 THEN -t.total
     ELSE t.amount
   END AS amount
 FROM transaction t
@@ -40,10 +45,10 @@ WHERE (
         (t.sender_wallet_id   = $1 AND t.deleted_by_sender   = false)
      OR (t.receiver_wallet_id = $1 AND t.deleted_by_receiver = false)
       )
-      AND t.status = 'success'
+      AND t.status = 'SUCCESS'
   AND (
         $2 = ''
-     OR CASE WHEN t.type = 'topup' THEN pm.name ELSE a.fullname END ILIKE '%' || $2 || '%'
+     OR CASE WHEN t.type = 'TOPUP' THEN pm.name ELSE a.fullname END ILIKE '%' || $2 || '%'
      OR a.phone ILIKE '%' || $2 || '%'
       )
 ORDER BY t.created_at DESC
@@ -91,7 +96,7 @@ WHERE (
   AND t.status = 'success'
   AND (
         $2::text = ''
-     OR CASE WHEN t.type = 'topup' THEN pm.name ELSE a.fullname END ILIKE '%' || $2 || '%'
+     OR CASE WHEN t.type = 'TOPUP' THEN pm.name ELSE a.fullname END ILIKE '%' || $2 || '%'
      OR a.phone ILIKE '%' || $2 || '%'
       )`
 

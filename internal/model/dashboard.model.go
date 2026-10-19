@@ -7,8 +7,8 @@ type DashboardSummary struct {
 }
 
 type DashboardHistoryTransaction struct {
-	Name   string `db:"name"`
-	Avatar string `db:"avatar"`
-	Type   string `db:"type"`
-	Amount string `db:"amount"`
+	Name   string  `db:"name"`
+	Avatar *string `db:"avatar"`
+	Type   string  `db:"type"`
+	Amount string  `db:"amount"`
 }

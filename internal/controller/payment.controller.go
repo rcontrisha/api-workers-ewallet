@@ -149,12 +149,18 @@ func (p *PaymentController) GetPaymentMethodList(ctx *gin.Context) {
 func (p *PaymentController) GetTopupSummary(ctx *gin.Context) {
 	token, exist := ctx.Get("token")
 	if !exist {
-		ctx.JSON(401, dto.Response{Success: false, Message: "token doesn't exist"})
+		ctx.JSON(401, dto.Response{
+			Success: false,
+			Message: "token doesn't exist",
+		})
 		return
 	}
 	claims, ok := token.(pkg.JWTClaims)
 	if !ok {
-		ctx.JSON(401, dto.Response{Success: false, Message: "invalid token"})
+		ctx.JSON(401, dto.Response{
+			Success: false,
+			Message: "invalid token",
+		})
 		return
 	}
 

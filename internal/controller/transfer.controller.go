@@ -1,6 +1,8 @@
 package controller
 
 import (
+	"log"
+
 	"github.com/gin-gonic/gin"
 	"github.com/rcontrisha/api-workers-ewallet/internal/dto"
 	"github.com/rcontrisha/api-workers-ewallet/internal/service"
@@ -50,6 +52,7 @@ func (t *TransferController) SearchUsers(ctx *gin.Context) {
 	query := ctx.Query("q")
 	result, err := t.service.SearchUsersService(ctx.Request.Context(), query, userID)
 	if err != nil {
+		log.Println(err)
 		ctx.JSON(500, dto.Response{
 			Success: false,
 			Message: err.Error(),
