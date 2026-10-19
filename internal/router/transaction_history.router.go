@@ -17,4 +17,5 @@ func TransactionHistoryRouter(router *gin.Engine, db *pgxpool.Pool, rdb *redis.C
 	trxHistoryController := controller.NewTransactionHistoryController(trxHistoryService)
 
 	trxHistoryRouter.GET("", middleware.AuthMiddleware(rdb), trxHistoryController.GetTransactionHistory)
+	trxHistoryRouter.DELETE(":id", middleware.AuthMiddleware(rdb), trxHistoryController.DeleteHistoryTransaction)
 }

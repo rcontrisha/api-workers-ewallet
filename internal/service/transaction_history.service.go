@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
 	"math"
@@ -9,10 +10,13 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/rcontrisha/api-workers-ewallet/internal/dto"
 	"github.com/rcontrisha/api-workers-ewallet/internal/repository"
 )
+
+var ErrHistoryNotFound = errors.New("transaction history not found")
 
 type TransactionHistoryService struct {
 	repo *repository.TransactionHistoryRepo
@@ -47,6 +51,7 @@ func (s *TransactionHistoryService) TransactionHistory(ctx context.Context, wall
 	data := make([]dto.TransactionHistory, 0, len(result))
 	for _, v := range result {
 		data = append(data, dto.TransactionHistory{
+			ID:     v.ID,
 			Name:   v.Name,
 			Avatar: v.Avatar,
 			Phone:  v.Phone,
@@ -79,6 +84,14 @@ func (s *TransactionHistoryService) TransactionHistory(ctx context.Context, wall
 	}
 
 	return data, meta, nil
+}
+
+func (s *TransactionHistoryService) DeleteHistoryTransaction(ctx context.Context, transactionID, walletID string) error {
+	err := s.repo.DeleteHistoryTransaction(ctx, s.db, transactionID, walletID)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return ErrHistoryNotFound
+	}
+	return err
 }
 
 func buildPageURL(endPoint, search string, limit, page int) string {
