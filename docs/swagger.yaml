@@ -45,6 +45,19 @@ definitions:
       password:
         type: string
     type: object
+  dto.PaginationMetaData:
+    properties:
+      current_page:
+        type: integer
+      next:
+        type: string
+      prev:
+        type: string
+      total_data:
+        type: integer
+      total_page:
+        type: number
+    type: object
   dto.ResetPasswordRequest:
     properties:
       new_password:
@@ -61,6 +74,8 @@ definitions:
       data: {}
       message:
         type: string
+      metadata:
+        $ref: '#/definitions/dto.PaginationMetaData'
       success:
         type: boolean
     type: object
@@ -246,6 +261,43 @@ paths:
       summary: Reset password
       tags:
       - Authentication
+  /history/{id}:
+    delete:
+      description: Soft-delete a transaction for the current wallet owner only.
+      parameters:
+      - description: Transaction UUID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.Response'
+        "400":
+          description: Invalid transaction ID
+          schema:
+            $ref: '#/definitions/dto.Response'
+        "401":
+          description: Not authenticated
+          schema:
+            $ref: '#/definitions/dto.Response'
+        "404":
+          description: Transaction not found in user's history
+          schema:
+            $ref: '#/definitions/dto.Response'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/dto.Response'
+      security:
+      - BearerAuth: []
+      summary: Hide a transaction from the authenticated user's history
+      tags:
+      - History
   /payment/doku/notify:
     post:
       consumes:
