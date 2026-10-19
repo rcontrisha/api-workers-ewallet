@@ -1,0 +1,832 @@
+basePath: /
+definitions:
+  dto.CreateTopupRequest:
+    properties:
+      amount:
+        type: integer
+      note:
+        type: string
+      payment_method_id:
+        type: string
+      pin:
+        type: string
+      tax:
+        type: integer
+    required:
+    - amount
+    - pin
+    type: object
+  dto.DokuNotificationPayload:
+    properties:
+      order:
+        properties:
+          amount:
+            type: integer
+          invoice_number:
+            type: string
+        type: object
+      transaction:
+        properties:
+          status:
+            type: string
+        type: object
+    type: object
+  dto.FavoriteRequest:
+    properties:
+      favorite_user_id:
+        type: string
+    required:
+    - favorite_user_id
+    type: object
+  dto.ForgotPasswordRequest:
+    properties:
+      email:
+        type: string
+    required:
+    - email
+    type: object
+  dto.LoginRequest:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+    type: object
+  dto.PaginationMetaData:
+    properties:
+      current_page:
+        type: integer
+      next:
+        type: string
+      prev:
+        type: string
+      total_data:
+        type: integer
+      total_page:
+        type: number
+    type: object
+  dto.ResetPasswordRequest:
+    properties:
+      new_password:
+        minLength: 8
+        type: string
+      token:
+        type: string
+    required:
+    - new_password
+    - token
+    type: object
+  dto.Response:
+    properties:
+      data: {}
+      message:
+        type: string
+      metadata:
+        $ref: '#/definitions/dto.PaginationMetaData'
+      success:
+        type: boolean
+    type: object
+  dto.SetPinRequest:
+    properties:
+      pin:
+        type: string
+    required:
+    - pin
+    type: object
+  dto.TransferRequest:
+    properties:
+      amount:
+        type: integer
+      note:
+        type: string
+      pin:
+        type: string
+      receiver_id:
+        type: string
+    required:
+    - amount
+    - pin
+    - receiver_id
+    type: object
+  dto.UserChangePassword:
+    properties:
+      new_password:
+        type: string
+      old_password:
+        type: string
+    type: object
+  dto.UserChangePin:
+    properties:
+      pin:
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+  description: Digital wallet for simplifying transfer and track your money
+  title: The Workers E-wallet
+  version: "1.0"
+paths:
+  /auth/forgot-password:
+    post:
+      consumes:
+      - application/json
+      description: Send password reset instructions to a registered email.
+      parameters:
+      - description: Request payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/dto.ForgotPasswordRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Instructions sent
+          schema:
+            $ref: '#/definitions/dto.Response'
+        "400":
+          description: Invalid email
+          schema:
+            $ref: '#/definitions/dto.Response'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/dto.Response'
+      summary: Request password reset
+      tags:
+      - Authentication
+  /auth/login:
+    post:
+      consumes:
+      - application/json
+      description: Authenticate using an email and password.
+      parameters:
+      - description: Request payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/dto.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Login succeeded
+          schema:
+            $ref: '#/definitions/dto.Response'
+        "401":
+          description: Invalid email or password
+          schema:
+            $ref: '#/definitions/dto.Response'
+        "500":
+          description: Request parsing or server error
+          schema:
+            $ref: '#/definitions/dto.Response'
+      summary: Log in
+      tags:
+      - Authentication
+  /auth/logout:
+    post:
+      consumes:
+      - application/json
+      description: Revoke the authenticated access token using Redis.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Logged out
+          schema:
+            $ref: '#/definitions/dto.Response'
+        "401":
+          description: Not authenticated
+          schema:
+            $ref: '#/definitions/dto.Response'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/dto.Response'
+      security:
+      - BearerAuth: []
+      summary: Log out
+      tags:
+      - Authentication
+  /auth/register:
+    post:
+      consumes:
+      - application/json
+      description: Create a user, account and wallet with email and password.
+      parameters:
+      - description: Request payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/dto.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Account created
+          schema:
+            $ref: '#/definitions/dto.Response'
+        "401":
+          description: Registration rejected
+          schema:
+            $ref: '#/definitions/dto.Response'
+        "500":
+          description: Request parsing or server error
+          schema:
+            $ref: '#/definitions/dto.Response'
+      summary: Register an account
+      tags:
+      - Authentication
+  /auth/reset-password:
+    post:
+      consumes:
+      - application/json
+      description: Reset password using a reset token and a new password.
+      parameters:
+      - description: Request payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/dto.ResetPasswordRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Password reset
+          schema:
+            $ref: '#/definitions/dto.Response'
+        "400":
+          description: Invalid or expired reset request
+          schema:
+            $ref: '#/definitions/dto.Response'
+      summary: Reset password
+      tags:
+      - Authentication
+  /favorite:
+    post:
+      consumes:
+      - application/json
+      description: Add a user to favorites or remove them if already favorited.
+      parameters:
+      - description: Favorite user request
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/dto.FavoriteRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Favorite added or removed successfully
+          schema:
+            $ref: '#/definitions/dto.Response'
+        "400":
+          description: Invalid favorite_user_id or request payload
+          schema:
+            $ref: '#/definitions/dto.Response'
+        "401":
+          description: Unauthorized or invalid token
+          schema:
+            $ref: '#/definitions/dto.Response'
+        "404":
+          description: User not found
+          schema:
+            $ref: '#/definitions/dto.Response'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/dto.Response'
+      security:
+      - BearerAuth: []
+      summary: Toggle favorite user
+      tags:
+      - Favorite
+  /history:
+    get:
+      description: Retrieve the authenticated user's successful transaction history
+        with pagination and optional search.
+      parameters:
+      - default: 1
+        description: Page number, defaults to 1
+        in: query
+        name: page
+        type: integer
+      - default: 7
+        description: Number of transactions per page, defaults to 7
+        in: query
+        name: limit
+        type: integer
+      - description: Search by name or phone number
+        in: query
+        name: search
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Transaction history retrieved successfully
+          schema:
+            $ref: '#/definitions/dto.Response'
+        "401":
+          description: Unauthorized or invalid token
+          schema:
+            $ref: '#/definitions/dto.Response'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/dto.Response'
+      security:
+      - BearerAuth: []
+      summary: Get transaction history
+      tags:
+      - History
+  /history/{id}:
+    delete:
+      description: Hide a transaction from the authenticated user's history without
+        deleting the underlying transaction record.
+      parameters:
+      - description: Transaction UUID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Transaction hidden successfully
+          schema:
+            $ref: '#/definitions/dto.Response'
+        "400":
+          description: Invalid transaction ID
+          schema:
+            $ref: '#/definitions/dto.Response'
+        "401":
+          description: Unauthorized or invalid token
+          schema:
+            $ref: '#/definitions/dto.Response'
+        "404":
+          description: Transaction not found, inaccessible, or already hidden
+          schema:
+            $ref: '#/definitions/dto.Response'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/dto.Response'
+      security:
+      - BearerAuth: []
+      summary: Hide transaction history
+      tags:
+      - History
+  /payment/doku/notify:
+    post:
+      consumes:
+      - application/json
+      description: Webhook endpoint receiving DOKU transaction status notifications.
+      parameters:
+      - description: Request payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/dto.DokuNotificationPayload'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Notification processed
+          schema:
+            $ref: '#/definitions/dto.Response'
+        "400":
+          description: Invalid webhook
+          schema:
+            $ref: '#/definitions/dto.Response'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/dto.Response'
+      summary: Receive DOKU notification
+      tags:
+      - Payment
+  /payment/method:
+    get:
+      description: Retrieve available payment methods.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Payment methods retrieved
+          schema:
+            $ref: '#/definitions/dto.Response'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/dto.Response'
+      summary: List payment methods
+      tags:
+      - Payment
+  /payment/topup:
+    post:
+      consumes:
+      - application/json
+      description: Request a top-up checkout with the DOKU payment gateway and transaction
+        PIN.
+      parameters:
+      - description: Request payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateTopupRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Top-up initiated
+          schema:
+            $ref: '#/definitions/dto.Response'
+        "400":
+          description: Invalid input
+          schema:
+            $ref: '#/definitions/dto.Response'
+        "401":
+          description: Not authenticated
+          schema:
+            $ref: '#/definitions/dto.Response'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/dto.Response'
+      security:
+      - BearerAuth: []
+      summary: Create top-up
+      tags:
+      - Payment
+  /payment/topup/{trx_code}:
+    get:
+      description: Retrieve the top-up transaction summary by transaction code for
+        the authenticated user.
+      parameters:
+      - description: Top-up transaction code
+        in: path
+        name: trx_code
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Top-up summary retrieved successfully
+          schema:
+            $ref: '#/definitions/dto.Response'
+        "401":
+          description: Unauthorized or invalid token
+          schema:
+            $ref: '#/definitions/dto.Response'
+        "404":
+          description: Transaction not found
+          schema:
+            $ref: '#/definitions/dto.Response'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/dto.Response'
+      security:
+      - BearerAuth: []
+      summary: Get top-up transaction summary
+      tags:
+      - Payment
+  /transfer:
+    post:
+      consumes:
+      - application/json
+      description: Transfer wallet balance to another user after validating the six-digit
+        PIN.
+      parameters:
+      - description: Request payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/dto.TransferRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Transfer completed
+          schema:
+            $ref: '#/definitions/dto.Response'
+        "400":
+          description: Validation or transfer failed
+          schema:
+            $ref: '#/definitions/dto.Response'
+        "401":
+          description: Not authenticated
+          schema:
+            $ref: '#/definitions/dto.Response'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/dto.Response'
+      security:
+      - BearerAuth: []
+      summary: Transfer money
+      tags:
+      - Transfer
+  /transfer/search:
+    get:
+      description: Search recipient accounts by q. If empty, return recent and favorite
+        contacts.
+      parameters:
+      - description: Search term (optional)
+        in: query
+        name: q
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Recipients retrieved
+          schema:
+            $ref: '#/definitions/dto.Response'
+        "401":
+          description: Not authenticated
+          schema:
+            $ref: '#/definitions/dto.Response'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/dto.Response'
+      security:
+      - BearerAuth: []
+      summary: Search transfer recipients
+      tags:
+      - Transfer
+  /user/avatar:
+    delete:
+      description: Delete the authenticated user avatar.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Avatar deleted
+          schema:
+            $ref: '#/definitions/dto.Response'
+        "401":
+          description: Not authenticated
+          schema:
+            $ref: '#/definitions/dto.Response'
+        "404":
+          description: Profile not found
+          schema:
+            $ref: '#/definitions/dto.Response'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/dto.Response'
+      security:
+      - BearerAuth: []
+      summary: Delete avatar
+      tags:
+      - User
+  /user/change-password:
+    patch:
+      consumes:
+      - application/json
+      description: Change password using old and new passwords.
+      parameters:
+      - description: Request payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UserChangePassword'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Password changed
+          schema:
+            $ref: '#/definitions/dto.Response'
+        "400":
+          description: Invalid request or old password
+          schema:
+            $ref: '#/definitions/dto.Response'
+        "401":
+          description: Not authenticated
+          schema:
+            $ref: '#/definitions/dto.Response'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/dto.Response'
+      security:
+      - BearerAuth: []
+      summary: Change password
+      tags:
+      - User
+  /user/change-pin:
+    patch:
+      consumes:
+      - application/json
+      description: Change the authenticated user transaction PIN.
+      parameters:
+      - description: Request payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UserChangePin'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: PIN changed
+          schema:
+            $ref: '#/definitions/dto.Response'
+        "400":
+          description: Invalid request
+          schema:
+            $ref: '#/definitions/dto.Response'
+        "401":
+          description: Not authenticated
+          schema:
+            $ref: '#/definitions/dto.Response'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/dto.Response'
+      security:
+      - BearerAuth: []
+      summary: Change transaction PIN
+      tags:
+      - User
+  /user/dashboard-history:
+    get:
+      description: Retrieve recent transactions displayed on the dashboard.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: History retrieved
+          schema:
+            $ref: '#/definitions/dto.Response'
+        "401":
+          description: Not authenticated
+          schema:
+            $ref: '#/definitions/dto.Response'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/dto.Response'
+      security:
+      - BearerAuth: []
+      summary: Get dashboard transaction history
+      tags:
+      - User
+  /user/dashboard-summary:
+    get:
+      description: Retrieve wallet balance, total income and expense for the dashboard.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Summary retrieved
+          schema:
+            $ref: '#/definitions/dto.Response'
+        "401":
+          description: Not authenticated
+          schema:
+            $ref: '#/definitions/dto.Response'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/dto.Response'
+      security:
+      - BearerAuth: []
+      summary: Get dashboard summary
+      tags:
+      - User
+  /user/pin:
+    post:
+      consumes:
+      - application/json
+      description: Set a six-digit numeric transaction PIN.
+      parameters:
+      - description: Request payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/dto.SetPinRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: PIN set
+          schema:
+            $ref: '#/definitions/dto.Response'
+        "400":
+          description: Invalid PIN or request
+          schema:
+            $ref: '#/definitions/dto.Response'
+        "401":
+          description: Not authenticated
+          schema:
+            $ref: '#/definitions/dto.Response'
+        "500":
+          description: Authentication middleware or internal server error
+          schema:
+            $ref: '#/definitions/dto.Response'
+      security:
+      - BearerAuth: []
+      summary: Set transaction PIN
+      tags:
+      - User
+  /user/update:
+    patch:
+      consumes:
+      - multipart/form-data
+      description: Update profile information and optionally upload a profile image.
+      parameters:
+      - description: Full name
+        in: formData
+        name: fullname
+        type: string
+      - description: Phone number
+        in: formData
+        name: phone
+        type: string
+      - description: Email address
+        in: formData
+        name: email
+        type: string
+      - description: JPG, JPEG or PNG image, maximum 2 MiB
+        in: formData
+        name: avatar_url
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Profile updated successfully
+          schema:
+            $ref: '#/definitions/dto.Response'
+        "400":
+          description: Invalid form data or avatar
+          schema:
+            $ref: '#/definitions/dto.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dto.Response'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/dto.Response'
+      security:
+      - BearerAuth: []
+      summary: Update user profile
+      tags:
+      - User
+  /users/profile:
+    get:
+      description: Returns profile information for the authenticated user.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Profile retrieved successfully
+          schema:
+            $ref: '#/definitions/dto.Response'
+        "401":
+          description: Missing or invalid bearer token
+          schema:
+            $ref: '#/definitions/dto.Response'
+        "404":
+          description: Profile not found
+          schema:
+            $ref: '#/definitions/dto.Response'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/dto.Response'
+      security:
+      - BearerAuth: []
+      summary: Get user profile
+      tags:
+      - Users
+securityDefinitions:
+  BearerAuth:
+    description: Bearer token used as identiity for accessing backend
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

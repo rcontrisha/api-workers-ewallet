@@ -1,0 +1,3 @@
+ALTER TABLE account
+    ALTER COLUMN fullname DROP NOT NULL,
+    ALTER COLUMN phone    DROP NOT NULL;

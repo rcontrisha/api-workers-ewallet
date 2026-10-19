@@ -1,0 +1,3 @@
+ALTER TABLE account
+    ALTER COLUMN fullname SET NOT NULL,
+    ALTER COLUMN phone    SET NOT NULL;
