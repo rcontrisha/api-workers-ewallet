@@ -100,8 +100,8 @@ func (s *TransferService) TransferMoneyService(ctx context.Context, senderID str
 
 	trModel := model.Transaction{
 		TrxCode:          trxCode,
-		Type:             "TRANSFER",
-		Status:           "SUCCESS",
+		Type:             "transfer",
+		Status:           "success",
 		Amount:           payload.Amount,
 		Tax:              0,
 		Discount:         0,
