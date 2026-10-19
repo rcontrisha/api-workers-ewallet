@@ -13,7 +13,7 @@ FROM debian:trixie
 WORKDIR /srv
 
 COPY --from=builder /app/server .
-
+RUN apt-get update && apt-get install ca-certificates
 RUN mkdir -p ./public
 
 CMD [ "./server" ]
