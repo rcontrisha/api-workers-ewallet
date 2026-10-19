@@ -58,11 +58,11 @@ func (s *PaymentService) CreateTopupService(ctx context.Context, userID string, 
 		}
 	}
 
-	trxCode := fmt.Sprintf("TOPUP-%d", time.Now().UnixNano()/1e6)
+	trxCode := fmt.Sprintf("topup-%d", time.Now().UnixNano()/1e6)
 
 	txModel := model.Transaction{
 		TrxCode:          trxCode,
-		Type:             "TOPUP",
+		Type:             "topup",
 		Status:           "PENDING",
 		Amount:           payload.Amount,
 		Tax:              payload.Tax,
@@ -132,7 +132,7 @@ func (s *PaymentService) ProcessDokuNotificationService(ctx context.Context, pay
 		return nil
 	}
 
-	if payload.Transaction.Status == "SUCCESS" {
+	if payload.Transaction.Status == "success" {
 		tx, err := s.db.Begin(ctx)
 		if err != nil {
 			return err
@@ -141,7 +141,7 @@ func (s *PaymentService) ProcessDokuNotificationService(ctx context.Context, pay
 			_ = tx.Rollback(ctx)
 		}()
 
-		if err := s.repo.UpdateTransactionStatus(ctx, tx, trx.TrxCode, "SUCCESS"); err != nil {
+		if err := s.repo.UpdateTransactionStatus(ctx, tx, trx.TrxCode, "success"); err != nil {
 			return err
 		}
 
@@ -187,7 +187,7 @@ func (s *PaymentService) GetTopupSummaryService(ctx context.Context, userID, trx
 		return dto.TopupSummaryResponse{}, err
 	}
 
-	if trx.Type != "TOPUP" || trx.ReceiverWalletID != userID {
+	if trx.Type != "topup" || trx.ReceiverWalletID != userID {
 		return dto.TopupSummaryResponse{}, ErrTransactionNotFound
 	}
 
