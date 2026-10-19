@@ -227,6 +227,128 @@
                 }
             }
         },
+        "/favorite": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Add a user to favorites or remove them if already favorited.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Favorite"
+                ],
+                "summary": "Toggle favorite user",
+                "parameters": [
+                    {
+                        "description": "Favorite user request",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.FavoriteRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Favorite added or removed successfully",
+                        "schema": {
+                            "$ref": "#/definitions/dto.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid favorite_user_id or request payload",
+                        "schema": {
+                            "$ref": "#/definitions/dto.Response"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized or invalid token",
+                        "schema": {
+                            "$ref": "#/definitions/dto.Response"
+                        }
+                    },
+                    "404": {
+                        "description": "User not found",
+                        "schema": {
+                            "$ref": "#/definitions/dto.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/dto.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/history": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Retrieve the authenticated user's successful transaction history with pagination and optional search.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "History"
+                ],
+                "summary": "Get transaction history",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "Page number, defaults to 1",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 7,
+                        "description": "Number of transactions per page, defaults to 7",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Search by name or phone number",
+                        "name": "search",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Transaction history retrieved successfully",
+                        "schema": {
+                            "$ref": "#/definitions/dto.Response"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized or invalid token",
+                        "schema": {
+                            "$ref": "#/definitions/dto.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/dto.Response"
+                        }
+                    }
+                }
+            }
+        },
         "/history/{id}": {
             "delete": {
                 "security": [
@@ -234,14 +356,14 @@
                         "BearerAuth": []
                     }
                 ],
-                "description": "Soft-delete a transaction for the current wallet owner only.",
+                "description": "Hide a transaction from the authenticated user's history without deleting the underlying transaction record.",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "History"
                 ],
-                "summary": "Hide a transaction from the authenticated user's history",
+                "summary": "Hide transaction history",
                 "parameters": [
                     {
                         "type": "string",
@@ -253,7 +375,7 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "Transaction hidden successfully",
                         "schema": {
                             "$ref": "#/definitions/dto.Response"
                         }
@@ -265,19 +387,19 @@
                         }
                     },
                     "401": {
-                        "description": "Not authenticated",
+                        "description": "Unauthorized or invalid token",
                         "schema": {
                             "$ref": "#/definitions/dto.Response"
                         }
                     },
                     "404": {
-                        "description": "Transaction not found in user's history",
+                        "description": "Transaction not found, inaccessible, or already hidden",
                         "schema": {
                             "$ref": "#/definitions/dto.Response"
                         }
                     },
                     "500": {
-                        "description": "Server error",
+                        "description": "Internal server error",
                         "schema": {
                             "$ref": "#/definitions/dto.Response"
                         }
@@ -1018,6 +1140,17 @@
                             "type": "string"
                         }
                     }
+                }
+            }
+        },
+        "dto.FavoriteRequest": {
+            "type": "object",
+            "required": [
+                "favorite_user_id"
+            ],
+            "properties": {
+                "favorite_user_id": {
+                    "type": "string"
                 }
             }
         },

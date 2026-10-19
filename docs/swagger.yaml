@@ -31,6 +31,13 @@ definitions:
             type: string
         type: object
     type: object
+  dto.FavoriteRequest:
+    properties:
+      favorite_user_id:
+        type: string
+    required:
+    - favorite_user_id
+    type: object
   dto.ForgotPasswordRequest:
     properties:
       email:
@@ -261,9 +268,89 @@ paths:
       summary: Reset password
       tags:
       - Authentication
+  /favorite:
+    post:
+      consumes:
+      - application/json
+      description: Add a user to favorites or remove them if already favorited.
+      parameters:
+      - description: Favorite user request
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/dto.FavoriteRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Favorite added or removed successfully
+          schema:
+            $ref: '#/definitions/dto.Response'
+        "400":
+          description: Invalid favorite_user_id or request payload
+          schema:
+            $ref: '#/definitions/dto.Response'
+        "401":
+          description: Unauthorized or invalid token
+          schema:
+            $ref: '#/definitions/dto.Response'
+        "404":
+          description: User not found
+          schema:
+            $ref: '#/definitions/dto.Response'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/dto.Response'
+      security:
+      - BearerAuth: []
+      summary: Toggle favorite user
+      tags:
+      - Favorite
+  /history:
+    get:
+      description: Retrieve the authenticated user's successful transaction history
+        with pagination and optional search.
+      parameters:
+      - default: 1
+        description: Page number, defaults to 1
+        in: query
+        name: page
+        type: integer
+      - default: 7
+        description: Number of transactions per page, defaults to 7
+        in: query
+        name: limit
+        type: integer
+      - description: Search by name or phone number
+        in: query
+        name: search
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Transaction history retrieved successfully
+          schema:
+            $ref: '#/definitions/dto.Response'
+        "401":
+          description: Unauthorized or invalid token
+          schema:
+            $ref: '#/definitions/dto.Response'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/dto.Response'
+      security:
+      - BearerAuth: []
+      summary: Get transaction history
+      tags:
+      - History
   /history/{id}:
     delete:
-      description: Soft-delete a transaction for the current wallet owner only.
+      description: Hide a transaction from the authenticated user's history without
+        deleting the underlying transaction record.
       parameters:
       - description: Transaction UUID
         in: path
@@ -274,7 +361,7 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
+          description: Transaction hidden successfully
           schema:
             $ref: '#/definitions/dto.Response'
         "400":
@@ -282,20 +369,20 @@ paths:
           schema:
             $ref: '#/definitions/dto.Response'
         "401":
-          description: Not authenticated
+          description: Unauthorized or invalid token
           schema:
             $ref: '#/definitions/dto.Response'
         "404":
-          description: Transaction not found in user's history
+          description: Transaction not found, inaccessible, or already hidden
           schema:
             $ref: '#/definitions/dto.Response'
         "500":
-          description: Server error
+          description: Internal server error
           schema:
             $ref: '#/definitions/dto.Response'
       security:
       - BearerAuth: []
-      summary: Hide a transaction from the authenticated user's history
+      summary: Hide transaction history
       tags:
       - History
   /payment/doku/notify:
