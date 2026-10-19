@@ -80,11 +80,11 @@ func (s *PaymentService) CreateTopupService(ctx context.Context, userID string, 
 	}
 
 	dokuPayload := pkg.DokuCheckoutPayload{}
-	dokuPayload.Order.Amount = payload.Amount
+	dokuPayload.Order.Amount = txModel.Total
 	dokuPayload.Order.InvoiceNumber = trxCode
 	dokuPayload.Order.Currency = "IDR"
 	dokuPayload.Order.AutoRedirect = true
-	dokuPayload.Order.CallbackURL = os.Getenv("DOKU_CALLBACK_URL")
+	dokuPayload.Order.CallbackURL = fmt.Sprintf("%s/top-up/summary?tranx_id=%s", os.Getenv("DOKU_CALLBACK_URL"), trxCode)
 
 	dokuPayload.Payment.PaymentDueDate = 60
 	if len(paymentChannels) > 0 {

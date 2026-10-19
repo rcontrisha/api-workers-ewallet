@@ -412,6 +412,7 @@ func (u *UserController) SetPIN(ctx *gin.Context) {
 	var payload dto.SetPinRequest
 	if err := ctx.ShouldBindJSON(&payload); err != nil {
 		ctx.JSON(http.StatusBadRequest, dto.Response{
+			Success: false,
 			Message: err.Error(),
 			Data:    nil,
 		})
@@ -420,6 +421,7 @@ func (u *UserController) SetPIN(ctx *gin.Context) {
 
 	if err := u.service.SetPINService(ctx.Request.Context(), userId, payload); err != nil {
 		ctx.JSON(http.StatusBadRequest, dto.Response{
+			Success: false,
 			Message: err.Error(),
 			Data:    nil,
 		})
@@ -427,6 +429,7 @@ func (u *UserController) SetPIN(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, dto.Response{
+		Success: true,
 		Message: "PIN set successfully",
 		Data:    nil,
 	})
@@ -492,6 +495,7 @@ func (u *UserController) DashboardHistoryTransaction(ctx *gin.Context) {
 
 	data, err := u.service.UserDashboardHistoryTransaction(ctx.Request.Context(), userId)
 	if err != nil {
+		log.Println(err)
 		ctx.JSON(http.StatusInternalServerError, dto.Response{
 			Success: false,
 			Message: "an server error occured",

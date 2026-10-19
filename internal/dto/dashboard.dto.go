@@ -7,8 +7,8 @@ type DashboardSummaryResponse struct {
 }
 
 type HistoryTransactionResponse struct {
-	Name   string `json:"name"`
-	Avatar string `json:"avatar"`
-	Type   string `json:"type"`
-	Amount string `json:"amount"`
+	Name   string  `json:"name"`
+	Avatar *string `json:"avatar"`
+	Type   string  `json:"type"`
+	Amount string  `json:"amount"`
 }
