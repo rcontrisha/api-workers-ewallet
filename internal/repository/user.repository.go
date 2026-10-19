@@ -186,6 +186,7 @@ WHERE (
         (t.sender_wallet_id   = $1 AND t.deleted_by_sender   = false)
      OR (t.receiver_wallet_id = $1 AND t.deleted_by_receiver = false)
       )
+		 AND t.status = 'success'
 ORDER BY t.created_at DESC
 LIMIT 10`
 
