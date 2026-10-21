@@ -63,7 +63,7 @@ func (s *PaymentService) CreateTopupService(ctx context.Context, userID string, 
 	txModel := model.Transaction{
 		TrxCode:          trxCode,
 		Type:             "topup",
-		Status:           "PENDING",
+		Status:           "pending",
 		Amount:           payload.Amount,
 		Tax:              payload.Tax,
 		Discount:         0,
@@ -127,12 +127,12 @@ func (s *PaymentService) ProcessDokuNotificationService(ctx context.Context, pay
 	}
 
 	// Idempotency check: jika status transaksi sudah bukan PENDING, abaikan request duplikat
-	if trx.Status != "PENDING" {
+	if trx.Status != "pending" {
 		log.Printf("[DokuNotification] Invoice %s already processed with status %s", trx.TrxCode, trx.Status)
 		return nil
 	}
 
-	if payload.Transaction.Status == "success" {
+	if payload.Transaction.Status == "SUCCESS" {
 		tx, err := s.db.Begin(ctx)
 		if err != nil {
 			return err
@@ -157,7 +157,7 @@ func (s *PaymentService) ProcessDokuNotificationService(ctx context.Context, pay
 		return nil
 	}
 
-	return s.repo.UpdateTransactionStatus(ctx, s.db, trx.TrxCode, "FAILED")
+	return s.repo.UpdateTransactionStatus(ctx, s.db, trx.TrxCode, "failed")
 }
 
 func (s *PaymentService) GetPaymentMethodList(ctx context.Context) ([]dto.PaymentMethod, error) {

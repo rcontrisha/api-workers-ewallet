@@ -180,6 +180,86 @@ The Docker image does **not** start PostgreSQL or Redis. If those services run o
 | `make seed`                                              | Run seed scripts (PowerShell and `psql` required)            |
 | `docker build -t workers-ewallet-api .`                  | Build the API container image                                |
 
+## API Routes
+
+The backend exposes the following API endpoints using the
+Gin framework.
+
+**Base URL (local):** `http://localhost:8080`
+
+Protected routes require the following header:
+
+`Authorization: Bearer <token>`
+
+### Authentication
+
+| Method | Endpoint                | Description                      | Auth |
+| ------ | ----------------------- | -------------------------------- | ---- |
+| POST   | `/auth/register`        | Register a new user              | No   |
+| POST   | `/auth/login`           | Authenticate user and return JWT | No   |
+| POST   | `/auth/logout`          | Log out and invalidate token     | Yes  |
+| POST   | `/auth/forgot-password` | Request password reset           | No   |
+| POST   | `/auth/reset-password`  | Reset account password           | No   |
+
+### User & Profile
+
+| Method | Endpoint                | Description                    | Auth |
+| ------ | ----------------------- | ------------------------------ | ---- |
+| GET    | `/user/profile`         | Get authenticated user profile | Yes  |
+| PATCH  | `/user/update`          | Update user profile            | Yes  |
+| DELETE | `/user/avatar`          | Delete user avatar             | Yes  |
+| PATCH  | `/user/change-password` | Change account password        | Yes  |
+| POST   | `/user/pin`             | Set transaction PIN            | Yes  |
+| PATCH  | `/user/change-pin`      | Change transaction PIN         | Yes  |
+
+### Dashboard
+
+| Method | Endpoint                  | Description                        | Auth |
+| ------ | ------------------------- | ---------------------------------- | ---- |
+| GET    | `/user/dashboard-summary` | Get wallet and transaction summary | Yes  |
+| GET    | `/user/dashboard-history` | Get recent dashboard transactions  | Yes  |
+
+### Transfer
+
+| Method | Endpoint           | Description                            | Auth |
+| ------ | ------------------ | -------------------------------------- | ---- |
+| GET    | `/transfer/search` | Search users and retrieve contacts     | Yes  |
+| POST   | `/transfer`        | Transfer balance using transaction PIN | Yes  |
+
+### Favorites
+
+| Method | Endpoint    | Description                     | Auth |
+| ------ | ----------- | ------------------------------- | ---- |
+| POST   | `/favorite` | Toggle a user's favorite status | Yes  |
+
+The `/favorite` endpoint adds or removes a favorite
+depending on its current state.
+
+### Top-Up & Payments
+
+| Method | Endpoint                    | Description                   | Auth   |
+| ------ | --------------------------- | ----------------------------- | ------ |
+| GET    | `/payment/method`           | Get available payment methods | No     |
+| POST   | `/payment/topup`            | Create a top-up transaction   | Yes    |
+| GET    | `/payment/topup/{trx_code}` | Get top-up status and summary | Yes    |
+| POST   | `/payment/doku/notify`      | Receive DOKU payment webhook  | No JWT |
+
+### Transaction History
+
+| Method | Endpoint        | Description                          | Auth |
+| ------ | --------------- | ------------------------------------ | ---- |
+| GET    | `/history`      | Get transaction history              | Yes  |
+| DELETE | `/history/{id}` | Hide a transaction from user history | Yes  |
+
+### API Documentation
+
+Swagger UI is available at:
+
+`http://localhost:8080/swagger/index.html`
+
+**Note:** Routes above reflect the Gin router configuration.
+A reverse proxy may add an `/api` prefix in deployment.
+
 ## License
 
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
