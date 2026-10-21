@@ -164,15 +164,15 @@ func (u *UserRepo) UserSummaryDashboard(ctx context.Context, userId string, db D
 
 func (u *UserRepo) UserHistoryTransaction(ctx context.Context, userId string, db DBTX) ([]model.DashboardHistoryTransaction, error) {
 	query := `SELECT
-  CASE WHEN t.type = 'TOPUP' THEN pm.name ELSE a.fullname END AS name,
-  CASE WHEN t.type = 'TOPUP' THEN pm.logo ELSE a.avatar   END AS avatar,
+  CASE WHEN t.type = 'topup' THEN pm.name ELSE a.fullname END AS name,
+  CASE WHEN t.type = 'topup' THEN pm.logo ELSE a.avatar   END AS avatar,
   CASE
-    WHEN t.type = 'TOPUP'        THEN 'TOPUP'
+    WHEN t.type = 'topup'        THEN 'topup'
     WHEN t.sender_wallet_id = $1 THEN 'transfer_out'
     ELSE                              'transfer_in'
   END AS type,
   CASE
-    WHEN t.type <> 'TOPUP' AND t.sender_wallet_id = $1 THEN -t.total
+    WHEN t.type <> 'topup' AND t.sender_wallet_id = $1 THEN -t.total
     ELSE t.amount
   END AS amount
 FROM transaction t
@@ -186,6 +186,7 @@ WHERE (
         (t.sender_wallet_id   = $1 AND t.deleted_by_sender   = false)
      OR (t.receiver_wallet_id = $1 AND t.deleted_by_receiver = false)
       )
+		 AND t.status = 'success'
 ORDER BY t.created_at DESC
 LIMIT 10`
 

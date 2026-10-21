@@ -20,7 +20,7 @@ func (t *TransferRepo) GetRecentAndFavoriteContacts(ctx context.Context, db DBTX
 		FROM (
 			SELECT receiver_wallet_id AS user_id, created_at
 			FROM transaction
-			WHERE sender_wallet_id = $1 AND type = 'TRANSFER' AND status = 'SUCCESS'
+			WHERE sender_wallet_id = $1 AND type = 'transfer' AND status = 'success'
 			
 			UNION ALL
 			

@@ -58,12 +58,12 @@ func (s *PaymentService) CreateTopupService(ctx context.Context, userID string, 
 		}
 	}
 
-	trxCode := fmt.Sprintf("TOPUP-%d", time.Now().UnixNano()/1e6)
+	trxCode := fmt.Sprintf("topup-%d", time.Now().UnixNano()/1e6)
 
 	txModel := model.Transaction{
 		TrxCode:          trxCode,
-		Type:             "TOPUP",
-		Status:           "PENDING",
+		Type:             "topup",
+		Status:           "pending",
 		Amount:           payload.Amount,
 		Tax:              payload.Tax,
 		Discount:         0,
@@ -127,7 +127,7 @@ func (s *PaymentService) ProcessDokuNotificationService(ctx context.Context, pay
 	}
 
 	// Idempotency check: jika status transaksi sudah bukan PENDING, abaikan request duplikat
-	if trx.Status != "PENDING" {
+	if trx.Status != "pending" {
 		log.Printf("[DokuNotification] Invoice %s already processed with status %s", trx.TrxCode, trx.Status)
 		return nil
 	}
@@ -141,7 +141,7 @@ func (s *PaymentService) ProcessDokuNotificationService(ctx context.Context, pay
 			_ = tx.Rollback(ctx)
 		}()
 
-		if err := s.repo.UpdateTransactionStatus(ctx, tx, trx.TrxCode, "SUCCESS"); err != nil {
+		if err := s.repo.UpdateTransactionStatus(ctx, tx, trx.TrxCode, "success"); err != nil {
 			return err
 		}
 
@@ -157,7 +157,7 @@ func (s *PaymentService) ProcessDokuNotificationService(ctx context.Context, pay
 		return nil
 	}
 
-	return s.repo.UpdateTransactionStatus(ctx, s.db, trx.TrxCode, "FAILED")
+	return s.repo.UpdateTransactionStatus(ctx, s.db, trx.TrxCode, "failed")
 }
 
 func (s *PaymentService) GetPaymentMethodList(ctx context.Context) ([]dto.PaymentMethod, error) {
@@ -187,7 +187,7 @@ func (s *PaymentService) GetTopupSummaryService(ctx context.Context, userID, trx
 		return dto.TopupSummaryResponse{}, err
 	}
 
-	if trx.Type != "TOPUP" || trx.ReceiverWalletID != userID {
+	if trx.Type != "topup" || trx.ReceiverWalletID != userID {
 		return dto.TopupSummaryResponse{}, ErrTransactionNotFound
 	}
 
